@@ -10,6 +10,40 @@ function getStorageData(keys) {
     });
   });
 }
+function addScrollToBottomButton() {
+  // 创建按钮元素
+  const button = document.createElement("button");
+  button.textContent = "b";
+  button.id = "scrollToBottomButton";
+
+  // 设置按钮样式
+  button.style.position = "fixed";
+  button.style.bottom = "50px";
+  button.style.right = "2px";
+  button.style.width = "36px";
+  button.style.height = "36px";
+  button.style.textAlign = "center";
+  button.style.backgroundColor = "#007BFF";
+  button.style.color = "white";
+  button.style.border = "none";
+  button.style.borderRadius = "999px";
+  button.style.cursor = "pointer";
+  button.style.zIndex = "9999";
+
+  // 添加点击事件监听器
+  button.addEventListener("click", () => {
+    window.scrollTo({
+      top: document.body.scrollHeight,
+    });
+  });
+
+  // 将按钮添加到页面
+  document.body.appendChild(button);
+}
+
+// 调用函数添加按钮
+addScrollToBottomButton();
+
 function hideElementsByClassName(className, count) {
   const elements = document.getElementsByClassName(className);
   const maxCount =
