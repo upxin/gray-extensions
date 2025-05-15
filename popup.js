@@ -4,67 +4,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentWindow: true,
   });
   const btn = document.getElementById("switchThemeButton");
+  const targetDomain = "lotto.sina.cn"; // 固定目标域名
 
-  // 获取当前存储状态
+  // 获取当前存储状态（包含isGray和currentDomain）
   const getCurrentStorage = async () => {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get(["currentDomain"], (store) => {
+      chrome.storage.local.get(["currentDomain", "isGray"], (store) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve(store);
+          // 初始化默认值：首次访问设为非灰度模式
+          resolve({
+            currentDomain: store.currentDomain || targetDomain,
+            isGray: store.isGray || false,
+          });
         }
       });
     });
   };
 
-  const updateButtonText = async () => {
-    const store = await getCurrentStorage();
-    if (store.currentDomain === "lotto.sina.cn") {
-      btn.innerText = "切换到红色";
-    } else {
-      btn.innerText = "切换到灰色";
-    }
+  // 根据isGray状态更新按钮文本
+  const updateButtonText = async (isGray) => {
+    btn.innerText = isGray ? "切换到红色" : "切换到灰色";
   };
 
-  await updateButtonText();
+  // 初始化按钮状态
+  const store = await getCurrentStorage();
+  await updateButtonText(store.isGray);
 
   btn.addEventListener("click", async () => {
-    const currentDomain = new URL(tab.url).hostname;
-    const store = await getCurrentStorage();
+    const currentStore = await getCurrentStorage();
+    const newIsGray = !currentStore.isGray; // 切换状态
 
-    if (store.currentDomain) {
-      btn.innerText = "切换到灰色";
-      await new Promise((resolve, reject) => {
-        chrome.storage.local.remove("currentDomain", () => {
+    // 固定目标域名，仅更新isGray状态
+    await new Promise((resolve, reject) => {
+      chrome.storage.local.set(
+        { currentDomain: targetDomain, isGray: newIsGray },
+        () => {
           if (chrome.runtime.lastError) {
             reject(chrome.runtime.lastError);
           } else {
             resolve();
           }
-        });
-      });
-    } else {
-      btn.innerText = "切换到红色";
-      await new Promise((resolve, reject) => {
-        chrome.storage.local.set({ currentDomain }, () => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve();
-          }
-        });
-      });
-    }
-
-    const updatedStore = await getCurrentStorage();
-    const response = await chrome.tabs.sendMessage(tab.id, {
-      action: "switchTheme",
-      isGray: !!updatedStore.currentDomain,
+        }
+      );
     });
 
+    // 发送包含最新isGray状态的消息
+    const response = await chrome.tabs.sendMessage(tab.id, {
+      action: "switchTheme",
+      isGray: newIsGray, // 直接传递新状态
+    });
+
+    // 更新按钮显示
+    await updateButtonText(newIsGray);
+
     if (response) {
-      console.log(888, response);
+      console.log("主题切换成功", response);
     }
   });
 });
