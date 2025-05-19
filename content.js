@@ -86,11 +86,20 @@ function clear() {
   }
 
   // 隐藏特定表格体
-  const tbodyElements = document.getElementsByTagName("tbody");
-  if (tbodyElements[2]) {
-    tbodyElements[2].style.display = "none";
-  }
+  function removeTableBodyWithThbg() {
+    // 选择所有直接位于 tbody 下的 .thbg 元素
+    const thbgElements = document.querySelectorAll("tbody > .thbg");
 
+    thbgElements.forEach((element) => {
+      const tbody = element.closest("tbody"); // 找到当前 .thbg 元素的最近 tbody 父元素
+      if (tbody) {
+        tbody.remove(); // 删除 tbody
+        console.log("已删除包含.thbg的tbody");
+      }
+    });
+  }
+  removeTableBodyWithThbg()
+  
   // 操作父元素子节点（带存在性校验）
   const parent = document.getElementById("now_gross");
   if (parent) {
