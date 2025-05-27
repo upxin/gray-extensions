@@ -10,7 +10,42 @@ function getStorageData(keys) {
     });
   });
 }
+/**
+ * 添加滚动到顶部按钮
+ */
+function addScrollToTopButton() {
+  const button = document.createElement("button");
+  button.textContent = "↑";
+  button.id = "scrollToTopButton";
+  button.title = "滚动到顶部";
 
+  button.style.cssText = `
+    position: fixed;
+    bottom: 100px;
+    right: 2px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background-color: #007BFF;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 9999;
+    opacity: 0.8;
+  `;
+
+  button.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+    });
+  });
+
+  // 防止重复添加
+  if (!document.getElementById("scrollToTopButton")) {
+    document.body.appendChild(button);
+  }
+}
 // 添加底部滚动按钮
 function addScrollToBottomButton() {
   const button = document.createElement("button");
@@ -98,8 +133,8 @@ function clear() {
       }
     });
   }
-  removeTableBodyWithThbg()
-  
+  removeTableBodyWithThbg();
+
   // 操作父元素子节点（带存在性校验）
   const parent = document.getElementById("now_gross");
   if (parent) {
@@ -138,6 +173,7 @@ function clear() {
 
       // 执行 DOM 操作
       addScrollToBottomButton();
+      addScrollToTopButton();
       clear();
     }
   } catch (error) {
