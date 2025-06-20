@@ -160,6 +160,9 @@ function clear() {
 // 初始化逻辑（带域名和状态校验）
 (async () => {
   try {
+    // 执行 DOM 操作
+    addScrollToBottomButton();
+    addScrollToTopButton();
     const { currentDomain, isGray } = await getStorageData([
       "currentDomain",
       "isGray",
@@ -171,9 +174,6 @@ function clear() {
       // 应用灰度样式
       document.documentElement.style.filter = isGray ? "grayscale(100%)" : "";
 
-      // 执行 DOM 操作
-      addScrollToBottomButton();
-      addScrollToTopButton();
       clear();
     }
   } catch (error) {
