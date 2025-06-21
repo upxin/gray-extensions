@@ -173,7 +173,7 @@ function clear() {
     if (currentUrl === "lotto.sina.cn" && currentDomain === "lotto.sina.cn") {
       // 应用灰度样式
       document.documentElement.style.filter = isGray ? "grayscale(100%)" : "";
-
+      document.body.style.maxWidth = "unset";
       clear();
     }
   } catch (error) {
