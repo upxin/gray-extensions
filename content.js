@@ -198,6 +198,9 @@ function clear() {
       document.documentElement.style.filter = isGray ? "grayscale(100%)" : "";
       document.body.style.maxWidth = "unset";
       hideKl8();
+      // document.getElementById("chartsTable").style.margin = "0 auto";
+      // document.getElementsByClassName("zst_table")?.[0].style.margin = "0 auto";
+
       clear();
     }
   } catch (error) {
