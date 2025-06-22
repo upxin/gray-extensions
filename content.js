@@ -197,12 +197,13 @@ function clear() {
       // 应用灰度样式
       document.documentElement.style.filter = isGray ? "grayscale(100%)" : "";
       document.body.style.maxWidth = "unset";
+      clear();
+
       hideKl8();
       document.getElementById("chartsTable").style.width = "100%";
       if (document.getElementsByClassName("zst_table")?.[1]) {
         document.getElementsByClassName("zst_table")[1].style.width = "100%";
       }
-      clear();
     }
   } catch (error) {
     console.error("初始化失败:", error);
