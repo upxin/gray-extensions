@@ -199,7 +199,9 @@ function clear() {
       document.body.style.maxWidth = "unset";
       hideKl8();
       document.getElementById("chartsTable").style.width = "100%";
-
+      if (document.getElementsByClassName("zst_table")?.[1]) {
+        document.getElementsByClassName("zst_table")[1].style.width = "100%";
+      }
       clear();
     }
   } catch (error) {
