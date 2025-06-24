@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentWindow: true,
   });
   const btn = document.getElementById("switchThemeButton");
+  const choosedBtn = document.getElementById("choosed");
+
   const targetDomain = "lotto.sina.cn"; // 固定目标域名
 
   // 获取当前存储状态（包含isGray和currentDomain）
@@ -62,5 +64,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (response) {
       console.log("主题切换成功", response);
     }
+  });
+
+  choosedBtn.addEventListener("click", async () => {
+    chrome.tabs.sendMessage(tab.id, {
+      action: "openPanel",
+    });
   });
 });
