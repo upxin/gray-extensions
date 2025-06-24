@@ -1,61 +1,19 @@
-// 获取存储数据（包含域名和灰度状态）
-function getStorageData(keys) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.get(keys, (store) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(store);
-      }
-    });
-  });
-}
-/**
- * 创建一个可拖拽的数字选择器弹窗，带有优化的屏幕边缘检测
- * @param {Object} options - 配置选项
- * @param {number[]} options.row1 - 第一行数字
- * @param {number[]} options.row2 - 第二行数字
- * @param {number[]} options.row3 - 第三行数字
- * @param {string} options.title - 弹窗标题
- */
 function createNumberSelector(options = {}) {
-  // 默认配置
+  // 默认配置（三行数字自然排列，左对齐）
   const defaultOptions = {
-    row1: [1, 2, 3, null, null, 12, 13, 14, null, null, 23, 24, 25],
-    row2: [4, 5, 6, 10, 11, 15, 16, 17, 21, 22, 26, 27, 28, 32, 33],
+    row1: [1, 2, 3, null, null, 12, 13, 14, null, null, 23, 24, 25], // 第一行
+    row2: [4, 5, 6, 10, 11, 15, 16, 17, 21, 22, 26, 27, 28], // 第二行
+    row3: [7, 8, 9, 18, 19, 20, null, null, 29, 30, 31, 32, 33], // 第三行
     title: "数字选择器",
   };
 
   const config = { ...defaultOptions, ...options };
-
-  // 计算第三行（如果未提供）
-  if (!config.row3) {
-    const allNumbers = Array.from({ length: 33 }, (_, i) => i + 1);
-    const usedNumbers = [...config.row1, ...config.row2].filter(
-      (num) => num !== null
-    );
-    const remainingNumbers = allNumbers.filter(
-      (num) => !usedNumbers.includes(num)
-    );
-
-    // 保持与第一行相同的空位置
-    config.row3 = [...config.row1];
-    let remainingIndex = 0;
-
-    for (let i = 0; i < config.row3.length; i++) {
-      if (config.row3[i] !== null && remainingIndex < remainingNumbers.length) {
-        config.row3[i] = remainingNumbers[remainingIndex];
-        remainingIndex++;
-      }
-    }
-  }
 
   // 检查是否已存在数字选择器
   const existingContainer = document.getElementById(
     "number-selector-container"
   );
   if (existingContainer) {
-    // 如果已存在，先关闭再创建新的
     const existingToast = document.getElementById("number-selector-toast");
     const existingStyle = document.querySelector("style[data-number-selector]");
 
@@ -115,7 +73,7 @@ function createNumberSelector(options = {}) {
   header.appendChild(title);
   header.appendChild(closeBtn);
 
-  // 创建内容区域
+  // 创建内容区域（三行左对齐布局）
   const content = document.createElement("div");
   content.style.cssText = `
     display: flex;
@@ -124,16 +82,15 @@ function createNumberSelector(options = {}) {
     margin-bottom: 20px;
   `;
 
-  // 创建三行数字
+  // 创建三行数字（左对齐，每行独立flex容器）
   const rows = [config.row1, config.row2, config.row3];
-  const rowElements = [];
 
   rows.forEach((rowData, rowIndex) => {
-    const rowElement = document.createElement("div");
-    rowElement.style.cssText = `
+    const rowContainer = document.createElement("div");
+    rowContainer.style.cssText = `
       display: flex;
       gap: 8px;
-      justify-content: center;
+      justify-content: flex-start; /* 左对齐 */
     `;
 
     rowData.forEach((num) => {
@@ -166,11 +123,10 @@ function createNumberSelector(options = {}) {
         });
       }
 
-      rowElement.appendChild(item);
+      rowContainer.appendChild(item);
     });
 
-    content.appendChild(rowElement);
-    rowElements.push(rowElement);
+    content.appendChild(rowContainer);
   });
 
   // 创建按钮区域
@@ -179,6 +135,7 @@ function createNumberSelector(options = {}) {
     display: flex;
     gap: 10px;
     justify-content: center;
+    margin-top: 20px;
   `;
 
   const copyBtn = document.createElement("button");
@@ -267,56 +224,35 @@ function createNumberSelector(options = {}) {
   let containerWidth, containerHeight;
 
   header.addEventListener("mousedown", (e) => {
-    // 阻止事件冒泡和默认行为
     e.stopPropagation();
     e.preventDefault();
-
-    // 记录初始状态
     isDragging = true;
-
-    // 获取容器的当前位置和尺寸
     const rect = container.getBoundingClientRect();
     initialLeft = rect.left;
     initialTop = rect.top;
     containerWidth = container.offsetWidth;
     containerHeight = container.offsetHeight;
-
-    // 计算鼠标相对于容器左上角的偏移量
     offsetX = e.clientX - initialLeft;
     offsetY = e.clientY - initialTop;
-
-    // 更新样式
     container.style.transition = "none";
-    container.style.transform = "none"; // 移除初始的 transform
+    container.style.transform = "none";
     container.style.top = `${initialTop}px`;
     container.style.left = `${initialLeft}px`;
-
-    // 添加拖拽类，用于样式控制
     container.classList.add("dragging");
   });
 
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
-
-    // 计算新位置
     const newX = e.clientX - offsetX;
     const newY = e.clientY - offsetY;
-
-    // 获取屏幕尺寸
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-
-    // 计算最大和最小位置（确保容器不超出屏幕）
     const minX = 0;
     const maxX = screenWidth - containerWidth;
     const minY = 0;
     const maxY = screenHeight - containerHeight;
-
-    // 限制新位置在屏幕范围内
     const constrainedX = Math.max(minX, Math.min(newX, maxX));
     const constrainedY = Math.max(minY, Math.min(newY, maxY));
-
-    // 应用新位置
     container.style.left = `${constrainedX}px`;
     container.style.top = `${constrainedY}px`;
   });
@@ -335,31 +271,21 @@ function createNumberSelector(options = {}) {
     const selectedNumbers = Array.from(selectedItems).map(
       (item) => item.textContent
     );
-
     if (selectedNumbers.length === 0) {
       showToast("请先选择要复制的数字！");
       return;
     }
-
     const numbersString = selectedNumbers.sort((a, b) => a - b).join(",");
-
     navigator.clipboard
       .writeText(numbersString)
-      .then(() => {
-        showToast("已复制: " + numbersString);
-      })
-      .catch((err) => {
-        console.error("复制失败:", err);
-        showToast("复制失败，请手动复制！");
-      });
+      .then(() => showToast("已复制: " + numbersString))
+      .catch(() => showToast("复制失败，请手动复制！"));
   });
 
   // 清空选择
   clearBtn.addEventListener("click", () => {
     const allItems = container.querySelectorAll(".active");
-    allItems.forEach((item) => {
-      item.classList.remove("active");
-    });
+    allItems.forEach((item) => item.classList.remove("active"));
     showToast("已清空所有选择");
   });
 
@@ -368,7 +294,6 @@ function createNumberSelector(options = {}) {
     container.style.opacity = "0";
     container.style.transform = "translate(-50%, -50%) scale(0.9)";
     container.style.transition = "opacity 0.3s, transform 0.3s";
-
     setTimeout(() => {
       document.body.removeChild(container);
       document.body.removeChild(toast);
@@ -380,10 +305,7 @@ function createNumberSelector(options = {}) {
   function showToast(message) {
     toast.textContent = message;
     toast.classList.add("show");
-
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 2000);
+    setTimeout(() => toast.classList.remove("show"), 2000);
   }
 
   // 返回控制对象
@@ -391,13 +313,24 @@ function createNumberSelector(options = {}) {
     close: () => closeBtn.click(),
     copy: () => copyBtn.click(),
     clear: () => clearBtn.click(),
-    getSelectedNumbers: () => {
-      const selectedItems = container.querySelectorAll(".active");
-      return Array.from(selectedItems).map((item) => Number(item.textContent));
-    },
+    getSelectedNumbers: () =>
+      Array.from(container.querySelectorAll(".active")).map((item) =>
+        Number(item.textContent)
+      ),
   };
 }
 
+function getStorageData(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(keys, (store) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(store);
+      }
+    });
+  });
+}
 /**
  * 添加滚动到顶部按钮
  */
