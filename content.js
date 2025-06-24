@@ -570,18 +570,18 @@ function setNone(id) {
     ]);
     const currentUrl = window.location.hostname; // 获取当前页面域名
     // 创建数字选择器（使用默认配置）
-    const selector = createNumberSelector();
-
-    // 创建自定义配置的数字选择器
-    const customSelector = createNumberSelector({
-      title: "自定义数字选择器",
-      row1: [1, 2, 3, null, null, 12, 13, 14, null, null, 23, 24, 25],
-      row2: [4, 5, 6, 10, 11, 15, 16, 17, 21, 22, 26, 27, 28, 32, 33],
-      row3: [7, 8, 9, null, null, 18, 19, 20, null, null, 29, 30, 31], // 可选，会自动计算
-    });
 
     // 仅在目标域名且存储域名匹配时执行
     if (currentUrl === "lotto.sina.cn" && currentDomain === "lotto.sina.cn") {
+      const selector = createNumberSelector();
+
+      // 创建自定义配置的数字选择器
+      const customSelector = createNumberSelector({
+        title: "自定义数字选择器",
+        row1: [1, 2, 3, null, null, 12, 13, 14, null, null, 23, 24, 25],
+        row2: [4, 5, 6, 10, 11, 15, 16, 17, 21, 22, 26, 27, 28, 32, 33],
+        row3: [7, 8, 9, null, null, 18, 19, 20, null, null, 29, 30, 31], // 可选，会自动计算
+      });
       // 应用灰度样式
       document.documentElement.style.filter = isGray ? "grayscale(100%)" : "";
       document.body.style.maxWidth = "unset";
@@ -633,6 +633,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   }
   return true; // 确保异步响应
 });
+
 chrome.runtime.onMessage.addListener(async (message) => {
   if (message.action === "openPanel") {
     const { currentDomain, isGray } = await getStorageData([
