@@ -633,17 +633,22 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   }
   return true; // 确保异步响应
 });
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener(async (message) => {
   if (message.action === "openPanel") {
-    // 创建数字选择器（使用默认配置）
-    const selector = createNumberSelector();
+    const { currentDomain, isGray } = await getStorageData([
+      "currentDomain",
+      "isGray",
+    ]);
+    if (currentDomain === "lotto.sina.cn") {
+      const selector = createNumberSelector();
 
-    // 创建自定义配置的数字选择器
-    const customSelector = createNumberSelector({
-      title: "自定义数字选择器",
-      row1: [1, 2, 3, null, null, 12, 13, 14, null, null, 23, 24, 25],
-      row2: [4, 5, 6, 10, 11, 15, 16, 17, 21, 22, 26, 27, 28, 32, 33],
-      row3: [7, 8, 9, null, null, 18, 19, 20, null, null, 29, 30, 31], // 可选，会自动计算
-    });
+      // 创建自定义配置的数字选择器
+      const customSelector = createNumberSelector({
+        title: "自定义数字选择器",
+        row1: [1, 2, 3, null, null, 12, 13, 14, null, null, 23, 24, 25],
+        row2: [4, 5, 6, 10, 11, 15, 16, 17, 21, 22, 26, 27, 28, 32, 33],
+        row3: [7, 8, 9, null, null, 18, 19, 20, null, null, 29, 30, 31], // 可选，会自动计算
+      });
+    }
   }
 });
