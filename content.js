@@ -11,7 +11,7 @@ function getStorageData(keys) {
   });
 }
 /**
- * 创建一个可拖拽的数字选择器弹窗
+ * 创建一个可拖拽的数字选择器弹窗，带有优化的屏幕边缘检测
  * @param {Object} options - 配置选项
  * @param {number[]} options.row1 - 第一行数字
  * @param {number[]} options.row2 - 第二行数字
@@ -262,8 +262,9 @@ function createNumberSelector(options = {}) {
 
   // 实现拖拽功能
   let isDragging = false;
-  let startX, startY;
-  let initialTransform = "translate(-50%, -50%)";
+  let offsetX, offsetY;
+  let initialLeft, initialTop;
+  let containerWidth, containerHeight;
 
   header.addEventListener("mousedown", (e) => {
     // 阻止事件冒泡和默认行为
@@ -272,16 +273,23 @@ function createNumberSelector(options = {}) {
 
     // 记录初始状态
     isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
 
-    // 获取当前的 transform 值（如果有）
-    const computedStyle = window.getComputedStyle(container);
-    initialTransform = computedStyle.transform;
+    // 获取容器的当前位置和尺寸
+    const rect = container.getBoundingClientRect();
+    initialLeft = rect.left;
+    initialTop = rect.top;
+    containerWidth = container.offsetWidth;
+    containerHeight = container.offsetHeight;
+
+    // 计算鼠标相对于容器左上角的偏移量
+    offsetX = e.clientX - initialLeft;
+    offsetY = e.clientY - initialTop;
 
     // 更新样式
-    container.style.cursor = "grabbing";
     container.style.transition = "none";
+    container.style.transform = "none"; // 移除初始的 transform
+    container.style.top = `${initialTop}px`;
+    container.style.left = `${initialLeft}px`;
 
     // 添加拖拽类，用于样式控制
     container.classList.add("dragging");
@@ -290,19 +298,32 @@ function createNumberSelector(options = {}) {
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
 
-    // 计算鼠标移动的距离
-    const deltaX = e.clientX - startX;
-    const deltaY = e.clientY - startY;
+    // 计算新位置
+    const newX = e.clientX - offsetX;
+    const newY = e.clientY - offsetY;
 
-    // 应用新的 transform，保留初始的 translate(-50%, -50%)
-    // 并添加拖拽的偏移量
-    container.style.transform = `${initialTransform} translate(${deltaX}px, ${deltaY}px)`;
+    // 获取屏幕尺寸
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    // 计算最大和最小位置（确保容器不超出屏幕）
+    const minX = 0;
+    const maxX = screenWidth - containerWidth;
+    const minY = 0;
+    const maxY = screenHeight - containerHeight;
+
+    // 限制新位置在屏幕范围内
+    const constrainedX = Math.max(minX, Math.min(newX, maxX));
+    const constrainedY = Math.max(minY, Math.min(newY, maxY));
+
+    // 应用新位置
+    container.style.left = `${constrainedX}px`;
+    container.style.top = `${constrainedY}px`;
   });
 
   document.addEventListener("mouseup", () => {
     if (isDragging) {
       isDragging = false;
-      container.style.cursor = "move";
       container.style.transition = "transform 0.2s ease";
       container.classList.remove("dragging");
     }
@@ -376,13 +397,6 @@ function createNumberSelector(options = {}) {
     },
   };
 }
-
-// 使用示例
-// const selector = createNumberSelector({
-//   title: '自定义数字选择器',
-//   row1: [1, 2, 3, null, null, 12, 13, 14, null, null, 23, 24, 25],
-//   row2: [4, 5, 6, 10, 11, 15, 16, 17, 21, 22, 26, 27, 28, 32, 33]
-// });
 
 /**
  * 添加滚动到顶部按钮
