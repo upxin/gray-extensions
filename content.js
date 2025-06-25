@@ -530,7 +530,9 @@ function setNone(id) {
         row3: [7, 8, 9, null, null, 18, 19, 20, null, null, 29, 30, 31], // 可选，会自动计算
       });
       // 应用灰度样式
-      document.documentElement.style.filter = isGray ? "grayscale(100%)" : "";
+      document.getElementById("zst").style.filter = isGray
+        ? "grayscale(100%)"
+        : "";
       document.body.style.maxWidth = "unset";
       hideKl8();
       document.getElementById("chartsTable").style.width = "100%";
@@ -563,7 +565,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     }
 
     // 应用新状态
-    document.documentElement.style.filter = message.isGray
+    document.getElementById("zst").style.filter = message.isGray
       ? "grayscale(100%)"
       : "";
 
