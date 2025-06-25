@@ -520,6 +520,7 @@ function setNone(id) {
 
     // 仅在目标域名且存储域名匹配时执行
     if (currentUrl === "lotto.sina.cn" && currentDomain === "lotto.sina.cn") {
+      document.documentElement.style.userSelect = "none";
       // 应用灰度样式
       document.getElementById("zst").style.filter = isGray
         ? "grayscale(100%)"
